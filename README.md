@@ -1,2 +1,2 @@
-# Refitting_AutoMLLab
-Find heuristic to determine whether refitting is required
+### Finding heuristic(s) to determine when refitting is required 
+

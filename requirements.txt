@@ -1,0 +1,7 @@
+numpy
+SciPy
+matplotlib
+pandas
+autogluon
+pyyaml
+```
