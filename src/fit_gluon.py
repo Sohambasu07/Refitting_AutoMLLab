@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Dict, Tuple, TYPE_CHECKING, Any
 import pandas as pd
-from scipy.io import arff
+from scipy.io.arff import loadarff
 from autogluon.tabular import TabularPredictor
 import yaml
 
@@ -14,10 +14,7 @@ class Gluon:
                  dataset_config: Dict[str, Any]
                  ):
         self.data_dir = data_dir
-        self.dataset_config = dataset_config
-
-        with open(dataset_config, 'r') as f:
-            self.datasets = yaml.safe_load(f)
+        self.datasets = dataset_config
 
         self.dataframes, self.labels = self.load_data()
 
@@ -25,8 +22,9 @@ class Gluon:
         dataframes = []
         labels = []
         for dataset in self.datasets:
-            data = arff.load(open(self.data_dir / (dataset + '.arff'), 'r'))
-            df = pd.DataFrame(data)
+            print(f"Loading dataset {dataset}...")
+            data = loadarff(self.data_dir / (dataset + '.arff'))
+            df = pd.DataFrame(data[0])
             dataframes.append(df)
             labels.append(self.datasets[dataset]['label'])
         return dataframes, labels

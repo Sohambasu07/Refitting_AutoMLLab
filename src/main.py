@@ -18,12 +18,12 @@ def main(dataset_dir: str,
     dataset_cfg = configs_dir / dataset_cfg
 
     with open(dataset_cfg, 'r') as f:
-        datasets_config = yaml.safe_load(f)
+        dataset_config = yaml.safe_load(f)
 
-    datasets = list(datasets_config.keys())
+    datasets = list(dataset_config.keys())
 
     gluon = Gluon(data_dir = dataset_dir,
-                  datasets_config = datasets_config
+                  dataset_config = dataset_config
                   )
     
     if mode == 'train':
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     root_dir = Path(args.root_dir)
-    
+
     main(dataset_dir = args.dataset_dir,
          configs_dir = args.configs_dir,
          dataset_cfg = args.dataset_cfg,
