@@ -15,16 +15,16 @@
   "label": "class"
 "puma32H": 
   "url": "https://www.openml.org/data/download/53286/puma32H.arff"
-  "label": "binaryclass"
+  "label": "binaryClass"
 "cpu_small": 
   "url": "https://www.openml.org/data/download/53269/cpu_small.arff"
-  "label": "binaryclass"
+  "label": "binaryClass"
 "delta_ailerons": 
   "url": "https://www.openml.org/data/download/53337/delta_ailerons.arff"
-  "label": "binaryclass"
+  "label": "binaryClass"
 "2dplanes": 
   "url": "https://www.openml.org/data/download/53261/2dplanes.arff"
-  "label": "binayclass"
+  "label": "binaryClass"
 "electricity": 
   "url": "https://www.openml.org/data/download/2419/electricity-normalized.arff"
   "label": "class"
