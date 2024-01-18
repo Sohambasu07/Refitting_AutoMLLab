@@ -1,0 +1,30 @@
+"kr-vs-kp": 
+  "url": "https://www.openml.org/data/download/3/dataset_3_kr-vs-kp.arff"
+  "label": "class"
+"spambase": 
+  "url": "https://www.openml.org/data/download/44/dataset_44_spambase.arff"
+  "label": "class"
+"scene": 
+  "url": "https://www.openml.org/data/download/1390080/phpuZu33P"
+  "label": "class"
+"abalone": 
+  "url": "https://www.openml.org/data/download/53254/abalone.arff"
+  "label": "binaryClass"
+"credit-g": 
+  "url": "https://www.openml.org/data/download/31/dataset_31_credit-g.arff"
+  "label": "class"
+"mushroom": 
+  "url": "https://old.openml.org/data/download/22102970/file30cc58fe6038.arff"
+  "label": "class"
+"cpu_small": 
+  "url": "https://www.openml.org/data/download/53269/cpu_small.arff"
+  "label": "class"
+"delta_ailerons": 
+  "url": "https://www.openml.org/data/download/53337/delta_ailerons.arff"
+  "label": "class"
+"webdata-wXa": 
+  "url": "https://www.openml.org/data/download/52253/phpp41X7N"
+  "label": "class"
+"electricity": 
+  "url": "https://www.openml.org/data/download/2419/electricity-normalized.arff"
+  "label": "class"
