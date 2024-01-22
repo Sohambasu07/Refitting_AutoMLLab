@@ -8,6 +8,12 @@ if TYPE_CHECKING:
 
 class Gluon:
 
+    def load_predictor(
+            path: str
+    ) -> TabularPredictor:
+        predictor = TabularPredictor.load(path)
+        return predictor
+
     def fit_gluon(
             dataframe: DataFrame,
             label: str,
