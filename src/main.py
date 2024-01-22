@@ -46,7 +46,8 @@ def main(dataset_dir: str,
                   spec_dataset = spec_dataset
                   )
     
-    exp.check_data()
+    # Displaying information about the data
+    # exp.check_data()
 
     # Running the experiment
     exp.run_exp(mode = mode)    
