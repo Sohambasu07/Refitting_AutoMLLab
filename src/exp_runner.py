@@ -92,7 +92,8 @@ class ExpRunner:
 
     def run_exp(
             self,
-            mode: str
+            mode: str,
+            refit_dir: str | None = None
     ):
         
         if mode == 'fit':
@@ -117,6 +118,29 @@ class ExpRunner:
                     ))
         
         elif mode == 'refit':
+
+            if refit_dir is None:
+                raise ValueError("No refit directory specified!")
+            
+            run_path = self.root_dir / 'Runs'
+            if os.path.exists(run_path) is False:
+                raise ValueError(f"No Runs directory found in {self.root_dir}!"
+                                 "Please run the experiment in mode 'fit' first!")
+            
+            refit_path = run_path / refit_dir
+            print(refit_path)
+            if os.path.exists(refit_path) is False:
+                raise ValueError(f"Refit directory {refit_dir} not found in {run_path}!")
+            
+            for dataset in self.datasets:
+                print(dataset)
+                if dataset not in os.listdir(refit_path):
+                    continue
+                self.predictors.append(
+                    Gluon.load_predictor(
+                    path = refit_path / f'{dataset}'
+                    ))
+
             if len(self.predictors) == 0:
                 raise ValueError("No predictors to refit!]"
                                 "Please run the experiment in mode 'fit' first!")

@@ -14,7 +14,8 @@ def main(
         root_dir: Path = Path(os.getcwd()),
         mode: str = 'fit',
         spec_dataset: list[str] | int | None = None,
-        eval_metric: str = 'accuracy'
+        eval_metric: str = 'accuracy',
+        refit_dir: str = None
 ):
     
     # Setting up the paths
@@ -55,7 +56,8 @@ def main(
     # exp.check_data()
 
     # Running the experiment
-    exp.run_exp(mode = mode)    
+    exp.run_exp(mode = mode,
+                refit_dir = refit_dir)    
     
 
 
@@ -104,6 +106,11 @@ if __name__ == "__main__":
                         choices=metric_choices,
                         default="accuracy")
     
+    parser.add_argument("--refit_dir", "-rd",
+                        type=str,
+                        help="Directory to load the predictor from for refitting",
+                        default=None)
+    
     args = parser.parse_args()
 
     root_dir = Path(args.root_dir)
@@ -116,5 +123,6 @@ if __name__ == "__main__":
         root_dir = root_dir,
         mode = args.mode,
         spec_dataset = args.spec_dataset,
-        eval_metric = args.eval_metric
+        eval_metric = args.eval_metric,
+        refit_dir = args.refit_dir
     )
