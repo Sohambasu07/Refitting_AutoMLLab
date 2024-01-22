@@ -7,35 +7,37 @@ import argparse
 from pathlib import Path
 import os
 
-def synthetic_gen(n_samples: int = 1000,
-                  n_features: int = 20,
-                  n_informative: int = 2,
-                  n_redundant: int = 2,
-                  n_repeated: int = 0,
-                  n_classes: int = 2,
-                  class_sep: float = 1.0,
-                  shuffle: bool = True,
-                  random_state: int | None = None,
-                  write: bool = False,
-                  root_dir: Path = Path(os.getcwd()),
-                  data_dir: str = 'data',
-                  configs_dir: str = 'configs'
-                  ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def synthetic_gen(
+        n_samples: int = 1000,
+        n_features: int = 20,
+        n_informative: int = 2,
+        n_redundant: int = 2,
+        n_repeated: int = 0,
+        n_classes: int = 2,
+        class_sep: float = 1.0,
+        shuffle: bool = True,
+        random_state: int | None = None,
+        write: bool = False,
+        root_dir: Path = Path(os.getcwd()),
+        data_dir: str = 'data',
+        configs_dir: str = 'configs'
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """ Generate a synthetic dataset using sklearn.datasets.make_classification
     """
 
     print("Generating synthetic dataset...")
 
-    X, y = make_classification(n_samples = n_samples,
-                               n_features = n_features,
-                               n_informative = n_informative,
-                               n_redundant = n_redundant,
-                               n_repeated = n_repeated,
-                               n_classes = n_classes,
-                               class_sep = class_sep,
-                               shuffle = shuffle,
-                               random_state = random_state
-                               )
+    X, y = make_classification(
+        n_samples = n_samples,
+        n_features = n_features,
+        n_informative = n_informative,
+        n_redundant = n_redundant,
+        n_repeated = n_repeated,
+        n_classes = n_classes,
+        class_sep = class_sep,
+        shuffle = shuffle,
+        random_state = random_state
+    )
     # dataset = {'X': X, 'y': y}
     # dataset_config = {'label': 'y'}
 
@@ -124,16 +126,17 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
-    synthetic_gen(n_samples = args.n_samples,
-                  n_features = args.n_features,
-                  n_informative = args.n_informative,
-                  n_redundant = args.n_redundant,
-                  n_repeated = args.n_repeated,
-                  n_classes = args.n_classes,
-                  class_sep = args.class_sep,
-                  write = args.write,
-                  root_dir = args.root_dir,
-                  data_dir = args.data_dir,
-                  configs_dir = args.configs_dir
-                  )
+    synthetic_gen(
+        n_samples = args.n_samples,
+        n_features = args.n_features,
+        n_informative = args.n_informative,
+        n_redundant = args.n_redundant,
+        n_repeated = args.n_repeated,
+        n_classes = args.n_classes,
+        class_sep = args.class_sep,
+        write = args.write,
+        root_dir = args.root_dir,
+        data_dir = args.data_dir,
+        configs_dir = args.configs_dir
+    )
 
