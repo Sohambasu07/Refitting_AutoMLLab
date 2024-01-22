@@ -6,13 +6,16 @@ import argparse
 
 from src.exp_runner import ExpRunner
 
-def main(dataset_dir: str,
-         configs_dir: str,
-         dataset_cfg: str,
-         root_dir: Path = Path(os.getcwd()),
-         mode: str = 'fit',
-         spec_dataset: list[str] | int | None = None
-         ):
+def main(
+        dataset_dir: str,
+        configs_dir: str,
+        dataset_cfg: str,
+        holdout_frac: float,
+        root_dir: Path = Path(os.getcwd()),
+        mode: str = 'fit',
+        spec_dataset: list[str] | int | None = None,
+        eval_metric: str = 'accuracy'
+):
     
     # Setting up the paths
     dataset_dir = root_dir / dataset_dir
@@ -42,9 +45,11 @@ def main(dataset_dir: str,
     
     # Creating the ExpRunner object
     exp = ExpRunner(data_dir = dataset_dir,
-                  dataset_config = dataset_config,
-                  spec_dataset = spec_dataset
-                  )
+                    dataset_config = dataset_config,
+                    spec_dataset = spec_dataset,
+                    holdout_frac = holdout_frac,
+                    eval_metric = eval_metric
+                    )
     
     # Displaying information about the data
     # exp.check_data()
@@ -56,30 +61,31 @@ def main(dataset_dir: str,
 
 if __name__ == "__main__":
     mode_choices = ['fit', 'refit']
+    metric_choices = ['accuracy', 'log_loss', 'roc_auc']
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root_dir", 
+    parser.add_argument("--root_dir", "-r",
                         type=str, 
                         default=os.getcwd())
     
-    parser.add_argument("--dataset_dir", 
+    parser.add_argument("--dataset_dir", "-d",
                         type=str, 
                         default="data")
     
-    parser.add_argument("--configs_dir", 
+    parser.add_argument("--configs_dir", "-cd",
                         type=str, 
                         default="configs")
     
-    parser.add_argument("--dataset_cfg", 
+    parser.add_argument("--dataset_cfg", "-cfg",
                         type=str, 
                         default="datasets.yaml")
     
-    parser.add_argument("--mode", 
+    parser.add_argument("--mode", "-m",
                         type=str, 
                         choices=mode_choices,
                         default="fit")
     
-    parser.add_argument("--spec_dataset",
+    parser.add_argument("--spec_dataset", "-sd",
                         nargs='+',
                         type=str,
                         help="Dataset(s) to use"
@@ -87,16 +93,28 @@ if __name__ == "__main__":
                         "If list[str]: the specified dataset(s) will be used",
                         default=None)
     
+    parser.add_argument("--holdout_frac", "-hf",
+                        type=float,
+                        help="Heldout fraction for the fit experiment",
+                        default=0.1)
+    
+    parser.add_argument("--eval_metric", "-em",
+                        type=str,
+                        help="Evaluation metric for the fit experiment",
+                        choices=metric_choices,
+                        default="accuracy")
+    
     args = parser.parse_args()
 
     root_dir = Path(args.root_dir)
 
-    main(dataset_dir = args.dataset_dir,
-         configs_dir = args.configs_dir,
-         dataset_cfg = args.dataset_cfg,
-         root_dir = root_dir,
-         mode = args.mode,
-         spec_dataset = args.spec_dataset
-         )
-    
-    
+    main(
+        dataset_dir = args.dataset_dir,
+        configs_dir = args.configs_dir,
+        dataset_cfg = args.dataset_cfg,
+        holdout_frac = args.holdout_frac,
+        root_dir = root_dir,
+        mode = args.mode,
+        spec_dataset = args.spec_dataset,
+        eval_metric = args.eval_metric
+    )
