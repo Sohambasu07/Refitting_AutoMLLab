@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import Dict, Tuple, TYPE_CHECKING, Any
+from typing import Dict, Tuple, Any
 import pandas as pd
 from scipy.io.arff import loadarff
-
-if TYPE_CHECKING:
-    from pathlib import Path
+import os
+import datetime
+from pathlib import Path
 
 from src.fit_gluon import Gluon
 
@@ -28,11 +28,30 @@ class ExpRunner:
     dataframes: list[pd.DataFrame]
     """ List of dataframes containing the dataset(s) """
 
-    def __init__(self,
-                 data_dir: Path,
-                 dataset_config: Dict[str, Any],
-                 spec_dataset: list[str] | None = None
-                 ):
+    labels: list[str]
+    """ List of labels for each dataset """
+
+    predictors: list[Gluon]
+    """ List of predictors for each dataset """
+
+    holdout_frac: float
+    """ Fraction of the dataset to be used as holdout for validation """
+
+    eval_metric: str
+    """ Evaluation metric to be used for training """
+
+    root_dir: Path
+    """ Root directory """
+
+    def __init__(
+            self,
+            data_dir: Path,
+            dataset_config: Dict[str, Any],
+            spec_dataset: list[str] | None = None,
+            holdout_frac: float = 0.1,
+            eval_metric: str = 'accuracy',
+            root_dir: Path = Path(os.getcwd())
+    ):
         self.data_dir = data_dir
         self.dataset_config = dataset_config
         self.spec_dataset = spec_dataset
@@ -42,6 +61,10 @@ class ExpRunner:
             self.datasets = list(dataset_config.keys())
         self.dataframes, self.labels = self.load_data()
         self.predictors = []
+        self.holdout_frac = holdout_frac
+        self.eval_metric = eval_metric
+        self.root_dir = root_dir
+
 
     def load_data(self) -> Tuple[list[pd.DataFrame], list[str]]:
         dataframes = []
@@ -67,25 +90,43 @@ class ExpRunner:
             print(df.dtypes)
             print(df.describe())
 
-    def run_exp(self,
-                mode: str
-                ):
+    def run_exp(
+            self,
+            mode: str
+    ):
         
         if mode == 'fit':
+            if os.path.exists(self.root_dir / 'Runs') is False:
+                os.mkdir(self.root_dir / 'Runs')
+
+            run_path = self.root_dir / 'Runs' / f'Run_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+            os.mkdir(run_path)
+
             print("Running experiment in mode 'fit'...")
             for i, df in enumerate(self.dataframes):
                 label = self.labels[i] if len(self.labels) > 1 else self.labels[0]
                 print("\n\n!!!!!!!!!!!!!!!===========================!!!!!!!!!!!!!!!!")
                 print(f"DATASET {i}")
                 print(f"Fitting predictor for dataset {self.datasets[i]}...")
-                self.predictors.append(Gluon.fit_gluon(dataframe = df, 
-                                                       label = label))
+                self.predictors.append(Gluon.fit_gluon(
+                    dataframe = df, 
+                    label = label,
+                    eval_metric = self.eval_metric,
+                    holdout_frac = self.holdout_frac,
+                    save_path = run_path / f'{self.datasets[i]}'
+                    ))
         
         elif mode == 'refit':
+            if len(self.predictors) == 0:
+                raise ValueError("No predictors to refit!]"
+                                "Please run the experiment in mode 'fit' first!")
+            
             print("Running experiment in mode 'refit'...")
-            for i, df in enumerate(self.dataframes):
+            for i, predictor in enumerate(self.predictors):
                 print("\n\n!!!!!!!!!!!!!!!===========================!!!!!!!!!!!!!!!!")
                 print(f"DATASET {i}")
                 print(f"Refitting predictor for dataset {self.datasets[i]}...")
-                self.predictors.append(Gluon.refit_gluon(predictor = self.predictors[i]))
+                self.predictors[i] = Gluon.refit_gluon(
+                    predictor = predictor
+                    )
 
