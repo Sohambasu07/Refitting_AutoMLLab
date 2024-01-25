@@ -5,7 +5,7 @@ import os
 import argparse
 
 from src.exp_runner import ExpRunner
-from src.utils import arff_to_dataframe
+# from src.utils import arff_to_dataframe
 
 def main(
         dataset_dir: str,
@@ -20,6 +20,7 @@ def main(
         refit_dir: str | None = None,
         evaluate: bool = False,
         eval_dir: str | None = None,
+        info_dir: str | None = None,
         verbosity: int = 2
 ):
     
@@ -86,12 +87,14 @@ def main(
                 evaluate = evaluate,
                 eval_dir = eval_dir,
                 # test_data = test_data,
-                refit_dir = refit_dir)    
+                refit_dir = refit_dir,
+                info_dir = info_dir
+                )    
     
 
 
 if __name__ == "__main__":
-    mode_choices = ['fit', 'refit', 'eval', 'plot']
+    mode_choices = ['fit', 'refit', 'eval', 'plot', 'info']
     metric_choices = ['accuracy', 'log_loss', 'roc_auc']
 
     parser = argparse.ArgumentParser()
@@ -155,6 +158,11 @@ if __name__ == "__main__":
                         help="Directory to load the predictor from for evaluation",
                         default=None)
     
+    parser.add_argument("--info_dir", "-id",
+                        type=str,
+                        help="Directory to load the predictor from to get info",
+                        default=None)
+    
     parser.add_argument("--verbosity", "-v",
                         type=int,
                         help="Verbosity level",
@@ -176,5 +184,7 @@ if __name__ == "__main__":
         eval_metric = args.eval_metric,
         refit_dir = args.refit_dir,
         evaluate = args.evaluate,
-        eval_dir = args.eval_dir
+        eval_dir = args.eval_dir,
+        info_dir = args.info_dir,
+        verbosity = args.verbosity
     )
