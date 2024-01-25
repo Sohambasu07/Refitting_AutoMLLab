@@ -6,8 +6,10 @@ from sklearn.datasets import make_classification
 import argparse
 from pathlib import Path
 import os
+import yaml
 
 def synthetic_gen(
+        dataset_name: str = 'test_dataset',
         n_samples: int = 1000,
         n_features: int = 20,
         n_informative: int = 2,
@@ -18,7 +20,6 @@ def synthetic_gen(
         shuffle: bool = True,
         random_state: int | None = None,
         write: bool = False,
-        root_dir: Path = Path(os.getcwd()),
         data_dir: str = 'data',
         configs_dir: str = 'configs'
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -44,24 +45,33 @@ def synthetic_gen(
     print("Dataset generated!")
 
     if write:
-        data_dir = Path(root_dir) / data_dir
-        configs_dir = Path(root_dir) / configs_dir
-        # if not data_dir.exists():
-        #     os.mkdir(data_dir)
-        # if not configs_dir.exists():
-        #     os.mkdir(configs_dir)
+        if not data_dir.exists():
+            print(f"Creating directory {data_dir}...")
+            os.mkdir(data_dir)
+        if not configs_dir.exists():
+            print(f"Creating directory {configs_dir}...")
+            os.mkdir(configs_dir)
 
         print(f"Writing the synthetic dataset to {data_dir}...")
+
+        open_str = 'w'
+
+        # Setting write mode to append if the dataset already exists in yaml config
+        if os.path.exists(configs_dir / 'test_dataset.yaml'):
+            with open(configs_dir / 'test_dataset.yaml', 'r') as f:
+                cfg = yaml.safe_load(f)
+                if dataset_name not in cfg.keys():
+                    open_str = 'a'
         
         # Writing the test dataset config
-        with open(configs_dir / 'test_dataset.yaml', 'w') as f:
-            f.write('\"test_dataset\":\n')
+        with open(configs_dir / 'test_dataset.yaml', open_str) as f:
+            f.write(f'\"{dataset_name}\":\n')
             f.write('   \"label\": \"y\"\n')
 
         # Writing the test dataset
-        with open(data_dir / 'test_dataset.arff', 'w') as f:
+        with open(data_dir / f'{dataset_name}.arff', 'w') as f:
             f.write('% Synthetic Test dataset generated using sklearn.datasets.make_classification\n')
-            f.write('@relation test_dataset\n')
+            f.write(f'@relation {dataset_name}\n')
             for i in range(n_features):
                 f.write(f'@attribute x{i} numeric\n')
             f.write('@attribute y {0, 1}\n')
@@ -81,23 +91,28 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--root_dir", 
-                        type = Path, 
+                        type = Path,
+                        help = "Root directory",
                         default = Path(os.getcwd()))
     
     parser.add_argument("--data_dir",
                         type = str,
+                        help = "Directory containing the datasets",
                         default = 'data')
     
     parser.add_argument("--configs_dir",
                         type = str,
+                        help = "Directory containing the dataset config files",
                         default = 'configs')
     
     parser.add_argument("--write",
                         type = bool,
+                        help = "Whether to write the generated dataset to disk",
                         default = False)
 
     parser.add_argument("--n_samples", 
-                        type = int, 
+                        type = int,
+                        help = "Number of samples in the dataset",
                         default = 1000)
     
     parser.add_argument("--n_features",
@@ -124,9 +139,20 @@ if __name__ == "__main__":
                         type = float,
                         default = 1.0)
     
+    parser.add_argument("--dataset_name", "-dn",
+                        type = str,
+                        help = "Name of the dataset",
+                        default = 'test_dataset')
+    
     args = parser.parse_args()
 
+    # Setting up the paths
+    dataset_dir = args.root_dir / args.data_dir
+    configs_dir = args.root_dir / args.configs_dir
+
+    # Generating the synthetic test dataset
     synthetic_gen(
+        dataset_name = args.dataset_name,
         n_samples = args.n_samples,
         n_features = args.n_features,
         n_informative = args.n_informative,
@@ -135,8 +161,7 @@ if __name__ == "__main__":
         n_classes = args.n_classes,
         class_sep = args.class_sep,
         write = args.write,
-        root_dir = args.root_dir,
-        data_dir = args.data_dir,
-        configs_dir = args.configs_dir
+        data_dir = dataset_dir,
+        configs_dir = configs_dir
     )
 
