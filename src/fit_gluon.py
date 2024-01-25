@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, Tuple, TYPE_CHECKING, Any
+from typing import Tuple, TYPE_CHECKING
 from autogluon.tabular import TabularPredictor
 import torch
 
@@ -46,3 +46,9 @@ class Gluon:
     ) -> Tuple[float, float]:
         score = predictor.evaluate(data = test_dataframe)
         return score
+    
+    def get_info(
+            predictor: TabularPredictor
+    ) -> dict:
+        info = predictor.fit_summary(show_plot = True)
+        return info
