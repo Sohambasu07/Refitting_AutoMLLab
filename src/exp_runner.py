@@ -5,6 +5,7 @@ import pandas as pd
 import os
 import datetime
 from pathlib import Path
+import json
 
 from src.fit_gluon import Gluon
 from src.utils import arff_to_dataframe
@@ -99,7 +100,8 @@ class ExpRunner:
             evaluate: bool = False,
             eval_dir: str | None = None,
             test_data: Dict[str, Any] | None = None,
-            refit_dir: str | None = None
+            refit_dir: str | None = None,
+            info_dir: str | None = None
     ) -> None:
         """ 
         Run the experiment in the specified mode 
@@ -180,6 +182,18 @@ class ExpRunner:
                     verbosity = verbosity
                     ))
                 
+                # Save the train metadata
+                train_meta = {
+                'holdout_frac': self.holdout_frac,
+                'eval_metric': self.eval_metric,
+                'label': label,
+                'n_samples': df.shape[0],
+                'n_features': df.shape[1]
+                }
+
+                with open(run_path / self.datasets[i] / 'train_meta.json', 'w') as f:
+                    json.dump(train_meta, f, indent = 4)
+                
                 if evaluate:
                     if test_data is None:
                         raise ValueError("No test dataset provided!")
@@ -199,35 +213,17 @@ class ExpRunner:
         
         elif mode == 'refit':
 
-            if refit_dir is None:
-                raise ValueError("No refit directory specified!")
+            # Run checks
+            self.redundant_checks(
+                mode = mode,
+                directory = refit_dir
+            )
             
-            run_path = self.root_dir / 'Runs'
-            if os.path.exists(run_path) is False:
-                raise ValueError(f"No Runs directory found in {self.root_dir}!"
-                                "Please run the experiment in mode 'fit' first!")
-            
-            refit_path = run_path / refit_dir
-            print(refit_path)
-            if os.path.exists(refit_path) is False:
-                raise ValueError(f"Refit directory {refit_dir} not found in {run_path}!")
-            
-
             # Load the predictors
-            for dataset in self.datasets:
-                print(dataset)
-
-                # Skip datasets that are not in the refit directory
-                if dataset not in os.listdir(refit_path):
-                    continue
-                self.predictors.append(
-                    Gluon.load_predictor(
-                    path = refit_path / f'{dataset}'
-                    ))
-                
-            if len(self.predictors) == 0:
-                raise ValueError("No predictors to refit!]"
-                                "Please run the experiment in mode 'fit' first!")
+            self.load_predictors_labels(
+                mode = mode,
+                directory = refit_dir
+            )
             
             print("Running experiment in mode 'refit'...")
             for i, predictor in enumerate(self.predictors):
@@ -242,38 +238,19 @@ class ExpRunner:
         # MODE: EVAL
         
         elif mode == 'eval':
-            if eval_dir is None:
-                raise ValueError("No Eval directory specified!")
             
-            run_path = self.root_dir / 'Runs'
-            if os.path.exists(run_path) is False:
-                raise ValueError(f"No Runs directory found in {self.root_dir}!"
-                                "Please run the experiment in mode 'fit' first!")
-            
-            eval_path = run_path / eval_dir
-            print(eval_path)
-            if os.path.exists(eval_path) is False:
-                raise ValueError(f"Eval directory {eval_dir} not found in {run_path}!")
-            
-            if test_data is None:
-                raise ValueError("No test dataset provided!")
+            # Run checks
+            self.redundant_checks(
+                mode = mode,
+                directory = eval_dir,
+                test_data = test_data
+            )
             
             # Load the predictors
-            for dataset in self.datasets:
-                print(dataset)
-
-                # Skip datasets that are not in the eval directory
-                if dataset not in os.listdir(eval_path):
-                    continue
-                self.predictors.append(
-                    Gluon.load_predictor(
-                    path = eval_path / f'{dataset}'
-                    ))
-                self.labels.append(self.dataset_config[dataset]['label'])
-            
-            if len(self.predictors) == 0:
-                raise ValueError("No predictors to evaluate!]"
-                                "Please run the experiment in mode 'fit' first!")
+            self.load_predictors_labels(
+                mode = mode,
+                directory = eval_dir
+            )
             
             print("Running experiment in mode 'eval'...")
             for i, predictor in enumerate(self.predictors):
@@ -293,6 +270,78 @@ class ExpRunner:
         elif mode == 'plot':
             pass
 
+        elif mode == 'info':
+            
+            # Run checks
+            self.redundant_checks(
+                mode = mode,
+                directory = info_dir
+            )
+            
+
+            # Load the predictors
+            self.load_predictors_labels(
+                mode = mode,
+                directory = info_dir
+            )
+            
+            for i, predictor in enumerate(self.predictors):
+                print("\n\n!!!!!!!!!!!!!!!===========================!!!!!!!!!!!!!!!!")
+                print(f"DATASET {i}")
+                print(f"Getting info for predictor of dataset {self.datasets[i]}...")
+                info = Gluon.get_info(
+                    predictor = predictor
+                    )
+                print(info)
+
         else:
             raise ValueError(f"Invalid mode {mode}!")
+        
+    def redundant_checks(
+            self,
+            mode: str,
+            directory: str | None = None,
+            test_data: Dict[str, Any] | None = None
+    ):
+        if directory is None:
+                raise ValueError(f"No {mode} directory specified!")
+            
+        run_path = self.root_dir / 'Runs'
+        if os.path.exists(run_path) is False:
+            raise ValueError(f"No Runs directory found in {self.root_dir}!"
+                            "Please run the experiment in mode 'fit' first!")
+        
+        dir_path = run_path / directory
 
+        print(dir_path)
+        if os.path.exists(dir_path) is False:
+            raise ValueError(f"{mode} directory {dir_path} not found in {run_path}!")
+        
+        if mode == 'eval':
+            if test_data is None:
+                raise ValueError("No test dataset provided!")
+
+    def load_predictors_labels(
+            self,
+            mode: str,
+            directory: str | None = None,
+    ):
+            
+        run_path = self.root_dir / 'Runs'
+        dir_path = run_path / directory
+        # Load the predictors
+        for dataset in self.datasets:
+            print(dataset)
+
+            # Skip datasets that are not in the eval directory
+            if dataset not in os.listdir(dir_path):
+                continue
+            self.predictors.append(
+                Gluon.load_predictor(
+                path = dir_path / f'{dataset}'
+                ))
+            self.labels.append(self.dataset_config[dataset]['label'])
+
+        if len(self.predictors) == 0:
+            raise ValueError("No predictors present!]"
+                            "Please run the experiment in mode 'fit' first!")
