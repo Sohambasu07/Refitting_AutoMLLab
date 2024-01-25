@@ -19,7 +19,8 @@ class Gluon:
             label: str,
             eval_metric: str = 'accuracy',
             holdout_frac: float = 0.1,
-            save_path: str = None
+            save_path: str = None,
+            verbosity: int = 2
     ) -> TabularPredictor:
         predictor = TabularPredictor(
             label = label,
@@ -28,7 +29,8 @@ class Gluon:
             ).fit(
                 dataframe,
                 holdout_frac = holdout_frac,
-                num_gpus = torch.cuda.device_count()
+                num_gpus = torch.cuda.device_count(),
+                verbosity = verbosity
                 )
         return predictor
 
@@ -38,5 +40,9 @@ class Gluon:
         predictor.refit_full('all')
         return predictor
 
-    # def evaluate_gluon(self, test_data):
-    #     self.predictor.evaluate(test_data)
+    def evaluate_gluon(
+            test_dataframe: DataFrame,
+            predictor: TabularPredictor
+    ) -> Tuple[float, float]:
+        score = predictor.evaluate(data = test_dataframe)
+        return score

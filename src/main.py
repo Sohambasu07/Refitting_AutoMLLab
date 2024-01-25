@@ -5,17 +5,22 @@ import os
 import argparse
 
 from src.exp_runner import ExpRunner
+from src.utils import arff_to_dataframe
 
 def main(
         dataset_dir: str,
         configs_dir: str,
         dataset_cfg: str,
         holdout_frac: float,
+        test_dataset_name: str | None = None,
         root_dir: Path = Path(os.getcwd()),
         mode: str = 'fit',
         spec_dataset: list[str] | int | None = None,
         eval_metric: str = 'accuracy',
-        refit_dir: str = None
+        refit_dir: str | None = None,
+        evaluate: bool = False,
+        eval_dir: str | None = None,
+        verbosity: int = 2
 ):
     
     # Setting up the paths
@@ -23,7 +28,7 @@ def main(
     configs_dir = root_dir / configs_dir
     dataset_cfg = configs_dir / dataset_cfg
 
-    # Loading the dataset config
+    # Loading the train dataset config
     with open(dataset_cfg, 'r') as f:
         dataset_config = yaml.safe_load(f)
 
@@ -43,6 +48,26 @@ def main(
         spec_dataset = list(filter(lambda x: x in datasets, spec_dataset))
 
         print(f"Using datasets: {spec_dataset}")
+
+
+    # # Loading the test dataset config
+    # with open(configs_dir / 'test_dataset.yaml', 'r') as f:
+    #     test_dataset_config = yaml.safe_load(f)
+
+    # # Loading the test dataset
+    # test_df = arff_to_dataframe(
+    #     data_dir = dataset_dir,
+    #     dataset = test_dataset_name
+    # )
+
+    # test_label = test_dataset_config[test_dataset_name]['label']
+
+    # test_data = {
+    #     'data': test_df,
+    #     'label': test_label
+    # }
+        
+
     
     # Creating the ExpRunner object
     exp = ExpRunner(data_dir = dataset_dir,
@@ -57,12 +82,16 @@ def main(
 
     # Running the experiment
     exp.run_exp(mode = mode,
+                verbosity = verbosity,
+                evaluate = evaluate,
+                eval_dir = eval_dir,
+                # test_data = test_data,
                 refit_dir = refit_dir)    
     
 
 
 if __name__ == "__main__":
-    mode_choices = ['fit', 'refit']
+    mode_choices = ['fit', 'refit', 'eval', 'plot']
     metric_choices = ['accuracy', 'log_loss', 'roc_auc']
 
     parser = argparse.ArgumentParser()
@@ -111,6 +140,26 @@ if __name__ == "__main__":
                         help="Directory to load the predictor from for refitting",
                         default=None)
     
+    parser.add_argument("--evaluate", "-e",
+                        action="store_true",
+                        help="Evaluate the predictor on the test dataset",
+                        default=False)
+    
+    parser.add_argument("--test_dataset_name", "-td",
+                        type=str,
+                        help="Name of the test dataset",
+                        default=None)
+    
+    parser.add_argument("--eval_dir", "-ed",
+                        type=str,
+                        help="Directory to load the predictor from for evaluation",
+                        default=None)
+    
+    parser.add_argument("--verbosity", "-v",
+                        type=int,
+                        help="Verbosity level",
+                        default=2)
+    
     args = parser.parse_args()
 
     root_dir = Path(args.root_dir)
@@ -120,9 +169,12 @@ if __name__ == "__main__":
         configs_dir = args.configs_dir,
         dataset_cfg = args.dataset_cfg,
         holdout_frac = args.holdout_frac,
+        test_dataset_name = args.test_dataset_name,
         root_dir = root_dir,
         mode = args.mode,
         spec_dataset = args.spec_dataset,
         eval_metric = args.eval_metric,
-        refit_dir = args.refit_dir
+        refit_dir = args.refit_dir,
+        evaluate = args.evaluate,
+        eval_dir = args.eval_dir
     )
