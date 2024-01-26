@@ -11,14 +11,14 @@ def main(
         dataset_dir: str,
         configs_dir: str,
         dataset_cfg: str,
-        holdout_frac: float,
+        holdout_frac: float | None = None,
+        val_split: float | None = None,
         test_dataset_name: str | None = None,
         root_dir: Path = Path(os.getcwd()),
         mode: str = 'fit',
         spec_dataset: list[str] | int | None = None,
         eval_metric: str = 'accuracy',
         refit_dir: str | None = None,
-        evaluate: bool = False,
         eval_dir: str | None = None,
         info_dir: str | None = None,
         verbosity: int = 2
@@ -75,6 +75,7 @@ def main(
                     dataset_config = dataset_config,
                     spec_dataset = spec_dataset,
                     holdout_frac = holdout_frac,
+                    val_split = val_split,
                     eval_metric = eval_metric
                     )
     
@@ -84,7 +85,6 @@ def main(
     # Running the experiment
     exp.run_exp(mode = mode,
                 verbosity = verbosity,
-                evaluate = evaluate,
                 eval_dir = eval_dir,
                 # test_data = test_data,
                 refit_dir = refit_dir,
@@ -129,12 +129,17 @@ if __name__ == "__main__":
     
     parser.add_argument("--holdout_frac", "-hf",
                         type=float,
-                        help="Heldout fraction for the fit experiment",
-                        default=0.1)
+                        help="Heldout fraction for the 'fit' experiment",
+                        default=None)
+    
+    parser.add_argument("--val_split", "-vs",
+                        type=float,
+                        help="Validation split outside AutoGluon for the 'fit' experiment",
+                        default=None)
     
     parser.add_argument("--eval_metric", "-em",
                         type=str,
-                        help="Evaluation metric for the fit experiment",
+                        help="Evaluation metric for the 'fit' experiment",
                         choices=metric_choices,
                         default="accuracy")
     
@@ -177,13 +182,13 @@ if __name__ == "__main__":
         configs_dir = args.configs_dir,
         dataset_cfg = args.dataset_cfg,
         holdout_frac = args.holdout_frac,
+        val_split = args.val_split,
         test_dataset_name = args.test_dataset_name,
         root_dir = root_dir,
         mode = args.mode,
         spec_dataset = args.spec_dataset,
         eval_metric = args.eval_metric,
         refit_dir = args.refit_dir,
-        evaluate = args.evaluate,
         eval_dir = args.eval_dir,
         info_dir = args.info_dir,
         verbosity = args.verbosity

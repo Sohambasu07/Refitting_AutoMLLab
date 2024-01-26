@@ -9,6 +9,7 @@ import json
 
 from src.fit_gluon import Gluon
 from src.utils import arff_to_dataframe
+from sklearn.model_selection import train_test_split
 
 class ExpRunner:
     data_dir: Path
@@ -34,8 +35,11 @@ class ExpRunner:
     predictors: list[Gluon]
     """ List of predictors for each dataset """
 
-    holdout_frac: float
+    holdout_frac: float | None
     """ Fraction of the dataset to be used as holdout for validation """
+
+    val_split: float | None
+    """ Fraction of the dataset to be used as validation split outside AutoGluon"""
 
     eval_metric: str
     """ Evaluation metric to be used for training """
@@ -48,7 +52,8 @@ class ExpRunner:
             data_dir: Path,
             dataset_config: Dict[str, Any],
             spec_dataset: list[str] | None = None,
-            holdout_frac: float = 0.1,
+            holdout_frac: float | None = None,
+            val_split: float | None = None,
             eval_metric: str = 'accuracy',
             root_dir: Path = Path(os.getcwd())
     ):
@@ -60,10 +65,15 @@ class ExpRunner:
         else:
             self.datasets = list(dataset_config.keys())
         self.dataframes, self.labels = self.load_data()
+        self.val_dataframes = []
+        self.val_labels = []
         self.predictors = []
         self.holdout_frac = holdout_frac
+        self.val_split = val_split
         self.eval_metric = eval_metric
         self.root_dir = root_dir
+
+        self.split_data()
 
 
     def load_data(self) -> Tuple[list[pd.DataFrame], list[str]]:
@@ -82,6 +92,19 @@ class ExpRunner:
             labels.append(self.dataset_config[dataset]['label'])
         return dataframes, labels
     
+    def split_data(self) -> None:
+        if self.val_split is None or self.val_split == 0:
+            return
+        for i, df in enumerate(self.dataframes):
+            label = self.labels[i]
+            df_train, df_val = train_test_split(
+                df,
+                test_size = self.val_split,
+            )
+            self.dataframes[i] = df_train
+            self.val_dataframes.append(df_val)
+            self.val_labels.append(label)
+    
     
     def check_data(self):
         for df in self.dataframes:
@@ -97,7 +120,6 @@ class ExpRunner:
             self,
             mode: str,
             verbosity: int = 2,
-            evaluate: bool = False,
             eval_dir: str | None = None,
             test_data: Dict[str, Any] | None = None,
             refit_dir: str | None = None,
@@ -132,10 +154,6 @@ class ExpRunner:
             Verbosity level for the predictor
             Only applicable for mode == 'fit'
             Options: 1, 2, 3
-
-        evaluate: bool
-            Whether to evaluate the predictor on a separate test dataset during training
-            Only applicable for mode == 'fit'
 
         eval_dir: str
             Directory to load the predictors from for evaluation
@@ -194,16 +212,11 @@ class ExpRunner:
                 with open(run_path / self.datasets[i] / 'train_meta.json', 'w') as f:
                     json.dump(train_meta, f, indent = 4)
                 
-                if evaluate:
-                    if test_data is None:
-                        raise ValueError("No test dataset provided!")
-                # Evaluate the predictor on the test dataset
-                    test_df = test_data['data']
-                    test_label = test_data['label']
-                    test_df.rename(columns = {test_label: label}, inplace = True)
+                if self.val_split is not None:
+                # Evaluate the predictor on the validation set
                     print("Evaluating the predictor on the test dataset...")
                     score = Gluon.evaluate_gluon(
-                        test_dataframe = test_df,
+                        test_dataframe = self.val_dataframes[i],
                         predictor = self.predictors[i]
                         )
                     print(f"Test score for predictor of dataset {self.datasets[i]}: {score}")

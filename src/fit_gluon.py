@@ -18,7 +18,7 @@ class Gluon:
             dataframe: DataFrame,
             label: str,
             eval_metric: str = 'accuracy',
-            holdout_frac: float = 0.1,
+            holdout_frac: float | None = None,
             save_path: str = None,
             verbosity: int = 2
     ) -> TabularPredictor:
