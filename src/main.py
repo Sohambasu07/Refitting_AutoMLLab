@@ -18,9 +18,7 @@ def main(
         mode: str = 'fit',
         spec_dataset: list[str] | int | None = None,
         eval_metric: str = 'accuracy',
-        refit_dir: str | None = None,
-        eval_dir: str | None = None,
-        info_dir: str | None = None,
+        directory: str | None = None,
         verbosity: int = 2
 ):
     
@@ -85,10 +83,8 @@ def main(
     # Running the experiment
     exp.run_exp(mode = mode,
                 verbosity = verbosity,
-                eval_dir = eval_dir,
-                # test_data = test_data,
-                refit_dir = refit_dir,
-                info_dir = info_dir
+                directory = directory,
+                # test_data = test_data
                 )    
     
 
@@ -143,9 +139,10 @@ if __name__ == "__main__":
                         choices=metric_choices,
                         default="accuracy")
     
-    parser.add_argument("--refit_dir", "-rd",
+    parser.add_argument("--directory", "-dir",
                         type=str,
-                        help="Directory to load the predictor from for refitting",
+                        help="Directory to load the predictor from for refitting,"
+                        " evaluation, plotting, or info",
                         default=None)
     
     parser.add_argument("--evaluate", "-e",
@@ -156,16 +153,6 @@ if __name__ == "__main__":
     parser.add_argument("--test_dataset_name", "-td",
                         type=str,
                         help="Name of the test dataset",
-                        default=None)
-    
-    parser.add_argument("--eval_dir", "-ed",
-                        type=str,
-                        help="Directory to load the predictor from for evaluation",
-                        default=None)
-    
-    parser.add_argument("--info_dir", "-id",
-                        type=str,
-                        help="Directory to load the predictor from to get info",
                         default=None)
     
     parser.add_argument("--verbosity", "-v",
@@ -188,8 +175,6 @@ if __name__ == "__main__":
         mode = args.mode,
         spec_dataset = args.spec_dataset,
         eval_metric = args.eval_metric,
-        refit_dir = args.refit_dir,
-        eval_dir = args.eval_dir,
-        info_dir = args.info_dir,
+        directory = args.directory,
         verbosity = args.verbosity
     )

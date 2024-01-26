@@ -120,10 +120,8 @@ class ExpRunner:
             self,
             mode: str,
             verbosity: int = 2,
-            eval_dir: str | None = None,
+            directory: str | None = None,
             test_data: Dict[str, Any] | None = None,
-            refit_dir: str | None = None,
-            info_dir: str | None = None
     ) -> None:
         """ 
         Run the experiment in the specified mode 
@@ -155,17 +153,15 @@ class ExpRunner:
             Only applicable for mode == 'fit'
             Options: 1, 2, 3
 
-        eval_dir: str
-            Directory to load the predictors from for evaluation
-            Only applicable for mode == 'eval'
+        directory: str
+            Directory to load the predictors from for refitting, 
+            evaluation, and info
+            Only applicable for mode == 'refit', 'eval', 'info'
 
         test_data: Dict[str, Any]
-            Dictionary containing the test dataframes and corresponding label key
+            Dictionary containing the test dataframes and 
+            corresponding label key
             Only applicable for mode == 'fit' and 'eval'
-
-        refit_dir: str
-            Directory to load the predictors from for refitting
-            Only applicable for mode == 'refit'
 
         Returns:
         --------
@@ -199,19 +195,7 @@ class ExpRunner:
                     save_path = run_path / f'{self.datasets[i]}',
                     verbosity = verbosity
                     ))
-                
-                # Save the train metadata
-                train_meta = {
-                'holdout_frac': self.holdout_frac,
-                'eval_metric': self.eval_metric,
-                'label': label,
-                'n_samples': df.shape[0],
-                'n_features': df.shape[1]
-                }
-
-                with open(run_path / self.datasets[i] / 'train_meta.json', 'w') as f:
-                    json.dump(train_meta, f, indent = 4)
-                
+                score = None
                 if self.val_split is not None:
                 # Evaluate the predictor on the validation set
                     print("Evaluating the predictor on the test dataset...")
@@ -221,6 +205,30 @@ class ExpRunner:
                         )
                     print(f"Test score for predictor of dataset {self.datasets[i]}: {score}")
 
+                ft_sum = self.predictors[i].leaderboard(silent = True)
+                all_fit_scores = ft_sum['score_val'].tolist()
+                all_models = ft_sum['model'].tolist()
+                
+                # Save the train metadata
+                train_meta = {
+                'dataset': self.datasets[i],
+                'label': label,
+                'n_samples': df.shape[0],
+                'n_features': df.shape[1],
+                'n_classes': len(df[label].unique()),
+                'holdout_frac': self.holdout_frac,
+                'validation_split': self.val_split,
+                'eval_metric': self.eval_metric,
+                'best_model': self.predictors[i].model_best,
+                'best_fit_score': all_fit_scores[0],
+                'best_val_score': score,
+                'all_models': all_models,
+                'all_fit_scores': all_fit_scores,
+                }
+
+                with open(run_path / self.datasets[i] / 'train_meta.json', 'w') as f:
+                    json.dump(train_meta, f, indent = 4)
+
 
         # MODE: REFIT
         
@@ -229,13 +237,12 @@ class ExpRunner:
             # Run checks
             self.redundant_checks(
                 mode = mode,
-                directory = refit_dir
+                directory = directory
             )
             
             # Load the predictors
             self.load_predictors_labels(
-                mode = mode,
-                directory = refit_dir
+                directory = directory
             )
             
             print("Running experiment in mode 'refit'...")
@@ -255,14 +262,13 @@ class ExpRunner:
             # Run checks
             self.redundant_checks(
                 mode = mode,
-                directory = eval_dir,
+                directory = directory,
                 test_data = test_data
             )
             
             # Load the predictors
             self.load_predictors_labels(
-                mode = mode,
-                directory = eval_dir
+                directory = directory
             )
             
             print("Running experiment in mode 'eval'...")
@@ -288,14 +294,13 @@ class ExpRunner:
             # Run checks
             self.redundant_checks(
                 mode = mode,
-                directory = info_dir
+                directory = directory
             )
             
 
             # Load the predictors
             self.load_predictors_labels(
-                mode = mode,
-                directory = info_dir
+                directory = directory
             )
             
             for i, predictor in enumerate(self.predictors):
@@ -336,7 +341,6 @@ class ExpRunner:
 
     def load_predictors_labels(
             self,
-            mode: str,
             directory: str | None = None,
     ):
             
