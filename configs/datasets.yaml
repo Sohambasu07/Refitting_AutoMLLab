@@ -10,9 +10,9 @@
 "abalone": 
   "url": "https://www.openml.org/data/download/53254/abalone.arff"
   "label": "binaryClass"
-"credit-g": 
-  "url": "https://www.openml.org/data/download/31/dataset_31_credit-g.arff"
-  "label": "class"
+"bank32nh": 
+  "url": "https://www.openml.org/data/download/53367/bank32nh.arff"
+  "label": "binaryClass"
 "puma32H": 
   "url": "https://www.openml.org/data/download/53286/puma32H.arff"
   "label": "binaryClass"
