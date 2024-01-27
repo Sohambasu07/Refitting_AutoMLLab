@@ -13,13 +13,15 @@ def main(
         dataset_cfg: str,
         holdout_frac: float | None = None,
         val_split: float | None = None,
+        split_random_state: int | None = None,
         test_dataset_name: str | None = None,
         root_dir: Path = Path(os.getcwd()),
         mode: str = 'fit',
         spec_dataset: list[str] | int | None = None,
         eval_metric: str = 'accuracy',
         directory: str | None = None,
-        verbosity: int = 2
+        verbosity: int = 2,
+        presets: list[str] | None = None
 ):
     
     # Setting up the paths
@@ -74,7 +76,9 @@ def main(
                     spec_dataset = spec_dataset,
                     holdout_frac = holdout_frac,
                     val_split = val_split,
-                    eval_metric = eval_metric
+                    eval_metric = eval_metric,
+                    presets = presets,
+                    split_random_state = split_random_state,
                     )
     
     # Displaying information about the data
@@ -160,6 +164,17 @@ if __name__ == "__main__":
                         help="Verbosity level",
                         default=2)
     
+    parser.add_argument("--presets", "-p",
+                        nargs='+',
+                        type=str,
+                        help="Preset(s) to use for the 'fit' experiment",
+                        default=None)
+    
+    parser.add_argument("--split_random_state", "-srs",
+                        type=int,
+                        help="Random state for the train-val split",
+                        default=None)
+    
     args = parser.parse_args()
 
     root_dir = Path(args.root_dir)
@@ -170,11 +185,13 @@ if __name__ == "__main__":
         dataset_cfg = args.dataset_cfg,
         holdout_frac = args.holdout_frac,
         val_split = args.val_split,
+        split_random_state = args.split_random_state,
         test_dataset_name = args.test_dataset_name,
         root_dir = root_dir,
         mode = args.mode,
         spec_dataset = args.spec_dataset,
         eval_metric = args.eval_metric,
         directory = args.directory,
-        verbosity = args.verbosity
+        verbosity = args.verbosity,
+        presets = args.presets
     )

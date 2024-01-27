@@ -20,7 +20,8 @@ class Gluon:
             eval_metric: str = 'accuracy',
             holdout_frac: float | None = None,
             save_path: str = None,
-            verbosity: int = 2
+            verbosity: int = 2,
+            presets: list[str] | None = None
     ) -> TabularPredictor:
         predictor = TabularPredictor(
             label = label,
@@ -28,6 +29,7 @@ class Gluon:
             path = save_path
             ).fit(
                 dataframe,
+                presets = presets,
                 holdout_frac = holdout_frac,
                 num_gpus = torch.cuda.device_count(),
                 verbosity = verbosity

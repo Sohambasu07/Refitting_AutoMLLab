@@ -41,11 +41,17 @@ class ExpRunner:
     val_split: float | None
     """ Fraction of the dataset to be used as validation split outside AutoGluon"""
 
+    split_random_state: int | None
+    """ Random state for the train test split """
+
     eval_metric: str
     """ Evaluation metric to be used for training """
 
     root_dir: Path
     """ Root directory """
+
+    presets: list[str] | None
+    """ List of presets to be used for training """
 
     def __init__(
             self,
@@ -54,8 +60,10 @@ class ExpRunner:
             spec_dataset: list[str] | None = None,
             holdout_frac: float | None = None,
             val_split: float | None = None,
+            split_random_state: int | None = None,
             eval_metric: str = 'accuracy',
-            root_dir: Path = Path(os.getcwd())
+            root_dir: Path = Path(os.getcwd()),
+            presets: list[str] | None = None
     ):
         self.data_dir = data_dir
         self.dataset_config = dataset_config
@@ -64,7 +72,8 @@ class ExpRunner:
             self.datasets = spec_dataset
         else:
             self.datasets = list(dataset_config.keys())
-        self.dataframes, self.labels = self.load_data()
+        self.dataframes = []
+        self.labels = []
         self.val_dataframes = []
         self.val_labels = []
         self.predictors = []
@@ -72,18 +81,16 @@ class ExpRunner:
         self.val_split = val_split
         self.eval_metric = eval_metric
         self.root_dir = root_dir
-
-        self.split_data()
+        self.presets = presets
+        self.split_random_state = split_random_state if split_random_state is not None else 42
 
 
     def load_data(self) -> Tuple[list[pd.DataFrame], list[str]]:
         dataframes = []
         labels = []
         for dataset in self.dataset_config:
-            if isinstance(self.spec_dataset, list):
-                if dataset not in self.spec_dataset:
-                    continue
-                
+            if dataset not in self.datasets:
+                continue
             df = arff_to_dataframe(
                 data_dir = self.data_dir, 
                 dataset = dataset)
@@ -100,6 +107,7 @@ class ExpRunner:
             df_train, df_val = train_test_split(
                 df,
                 test_size = self.val_split,
+                random_state = self.split_random_state,
             )
             self.dataframes[i] = df_train
             self.val_dataframes.append(df_val)
@@ -173,6 +181,12 @@ class ExpRunner:
         # MODE: FIT
 
         if mode == 'fit':
+
+            # Loading the dataset(s) and labels
+            self.dataframes, self.labels = self.load_data()
+            
+            # Splitting the dataset(s) into train and validation sets
+            self.split_data()
         
             if os.path.exists(self.root_dir / 'Runs') is False:
                 os.mkdir(self.root_dir / 'Runs')
@@ -187,7 +201,9 @@ class ExpRunner:
                 'num_datasets': len(self.datasets),
                 'holdout_frac': self.holdout_frac,
                 'val_split': self.val_split,
+                'split_random_state': self.split_random_state,
                 'eval_metric': self.eval_metric,
+                'presets': self.presets,
                 'refit': False
             }
 
@@ -202,17 +218,18 @@ class ExpRunner:
                 print(f"DATASET {i}")
                 print(f"Fitting predictor for dataset {self.datasets[i]}...")
                 self.predictors.append(Gluon.fit_gluon(
-                    dataframe = df, 
+                    dataframe = df,
                     label = label,
                     eval_metric = self.eval_metric,
                     holdout_frac = self.holdout_frac,
                     save_path = run_path / f'{self.datasets[i]}',
-                    verbosity = verbosity
+                    verbosity = verbosity,
+                    presets = self.presets
                     ))
                 score = None
                 if self.val_split is not None:
                 # Evaluate the predictor on the validation set
-                    print("Evaluating the predictor on the test dataset...")
+                    print("Evaluating the predictor on the external validation split...")
                     score = Gluon.evaluate_gluon(
                         test_dataframe = self.val_dataframes[i],
                         predictor = self.predictors[i]
@@ -227,7 +244,7 @@ class ExpRunner:
                 train_meta = {
                 'dataset': self.datasets[i],
                 'label': label,
-                'n_samples': df.shape[0],
+                'n_samples': df.shape[0] + self.val_dataframes[i].shape[0],
                 'n_features': df.shape[1],
                 'n_classes': len(df[label].unique()),
                 'holdout_frac': self.holdout_frac,
@@ -236,8 +253,9 @@ class ExpRunner:
                 'best_model': self.predictors[i].model_best,
                 'best_fit_score': all_fit_scores[0],
                 'best_val_score': score,
-                'all_models': all_models,
-                'all_fit_scores': all_fit_scores,
+                'all_models_fit_scores': dict(zip(all_models, all_fit_scores)),
+                'refit': False,
+                'refit_val_score': None
                 }
 
                 with open(run_path / self.datasets[i] / 'train_meta.json', 'w') as f:
@@ -253,18 +271,29 @@ class ExpRunner:
                 mode = mode,
                 directory = directory
             )
+
+            # Load the experiment metadata
+            with open(self.root_dir / 'Runs' / directory / 'exp_meta.json', 'r') as f:
+                exp_meta = json.load(f)
+                self.split_random_state = exp_meta['split_random_state']
+                self.val_split = exp_meta['val_split']
+                self.datasets = exp_meta['datasets']
+
+            # Set the refit flag to True in the experiment metadata
+            exp_meta['refit'] = True
+            with open(self.root_dir / 'Runs' / directory / 'exp_meta.json', 'w') as f:
+                json.dump(exp_meta, f, indent = 4)
+            
+            # Loading the dataset(s) and labels
+            self.dataframes, self.labels = self.load_data()            
             
             # Load the predictors
             self.load_predictors_labels(
                 directory = directory
             )
             
-            # Set the refit flag to True in the experiment metadata
-            with open(self.root_dir / 'Runs' / directory / 'exp_meta.json', 'r') as f:
-                exp_meta = json.load(f)
-            exp_meta['refit'] = True
-            with open(self.root_dir / 'Runs' / directory / 'exp_meta.json', 'w') as f:
-                json.dump(exp_meta, f, indent = 4)
+            # Train-val splitting according to fit's random state
+            self.split_data()
             
             # Refitting the predictors
             print("Running experiment in mode 'refit'...")
@@ -275,6 +304,25 @@ class ExpRunner:
                 self.predictors[i] = Gluon.refit_gluon(
                     predictor = predictor
                     )
+                
+                score = None
+                if self.val_split is not None:
+                # Evaluate the predictor on the validation set
+                    print("Evaluating the refitted predictor on the external validation split...")
+                    score = Gluon.evaluate_gluon(
+                        test_dataframe = self.val_dataframes[i],
+                        predictor = self.predictors[i]
+                        )
+                    print(f"Test score for refitted predictor of dataset {self.datasets[i]}: {score}")
+
+                # Set the refit flag to True and save the refit score in the train metadata
+                with open(self.root_dir / 'Runs' / directory / self.datasets[i] / 'train_meta.json', 'r') as f:
+                    train_meta = json.load(f)
+                    train_meta['refit'] = True
+                    train_meta['refit_val_score'] = score
+
+                with open(self.root_dir / 'Runs' / directory / self.datasets[i] / 'train_meta.json', 'w') as f:
+                    json.dump(train_meta, f, indent = 4)
 
 
         # MODE: EVAL
