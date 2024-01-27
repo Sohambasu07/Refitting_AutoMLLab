@@ -179,6 +179,20 @@ class ExpRunner:
             
             run_path = self.root_dir / 'Runs' / f'Run_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
             os.mkdir(run_path)
+
+            # Save the experiment metadata
+
+            exp_meta = {
+                'datasets': self.datasets,
+                'num_datasets': len(self.datasets),
+                'holdout_frac': self.holdout_frac,
+                'val_split': self.val_split,
+                'eval_metric': self.eval_metric,
+                'refit': False
+            }
+
+            with open(run_path / 'exp_meta.json', 'w') as f:
+                json.dump(exp_meta, f, indent = 4)
             
             print("Running experiment in mode 'fit'...")
             # Train and save the predictors
@@ -245,6 +259,14 @@ class ExpRunner:
                 directory = directory
             )
             
+            # Set the refit flag to True in the experiment metadata
+            with open(self.root_dir / 'Runs' / directory / 'exp_meta.json', 'r') as f:
+                exp_meta = json.load(f)
+            exp_meta['refit'] = True
+            with open(self.root_dir / 'Runs' / directory / 'exp_meta.json', 'w') as f:
+                json.dump(exp_meta, f, indent = 4)
+            
+            # Refitting the predictors
             print("Running experiment in mode 'refit'...")
             for i, predictor in enumerate(self.predictors):
                 print("\n\n!!!!!!!!!!!!!!!===========================!!!!!!!!!!!!!!!!")
@@ -271,6 +293,7 @@ class ExpRunner:
                 directory = directory
             )
             
+            # Evaluating the predictors
             print("Running experiment in mode 'eval'...")
             for i, predictor in enumerate(self.predictors):
                 label = self.labels[i]
@@ -303,6 +326,7 @@ class ExpRunner:
                 directory = directory
             )
             
+            # Getting info for the predictors
             for i, predictor in enumerate(self.predictors):
                 print("\n\n!!!!!!!!!!!!!!!===========================!!!!!!!!!!!!!!!!")
                 print(f"DATASET {i}")

@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--root_dir", "-r",
-                        type=str, 
+                        type=Path, 
                         default=os.getcwd())
     
     parser.add_argument("--dataset_dir", "-d",
