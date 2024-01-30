@@ -1,0 +1,4 @@
+"Experiments":
+  "Exp1":
+    "dir_list" : ["Run_20240128_142607", "Run_20240128_145207", "Run_20240128_150921"]
+    "datasets": ["kr-vs-kp", "spambase", "yeast_ml8", "abalone", "bank32nh", "puma32H", "cpu_small", "delta_ailerons", "2dplanes", "electricity"]
