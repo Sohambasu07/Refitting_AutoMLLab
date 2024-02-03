@@ -306,6 +306,7 @@ class ExpRunner:
                     )
                 
                 score = None
+                ft_sum = None
                 if self.val_split is not None:
                 # Evaluate the predictor on the validation set
                     print("Evaluating the refitted predictor on the external validation split...")
@@ -313,13 +314,18 @@ class ExpRunner:
                         test_dataframe = self.val_dataframes[i],
                         predictor = self.predictors[i]
                         )
+                    ft_sum = self.predictors[i].leaderboard(data=self.val_dataframes[i], silent=True)
                     print(f"Test score for refitted predictor of dataset {self.datasets[i]}: {score}")
+
+                all_refit_scores = ft_sum['score_test'].tolist()
+                all_models = ft_sum['model'].tolist()
 
                 # Set the refit flag to True and save the refit score in the train metadata
                 with open(self.root_dir / 'Runs' / directory / self.datasets[i] / 'train_meta.json', 'r') as f:
                     train_meta = json.load(f)
                     train_meta['refit'] = True
                     train_meta['refit_val_score'] = score
+                    train_meta['all_models_refit_scores'] = dict(zip(all_models, all_refit_scores))
 
                 with open(self.root_dir / 'Runs' / directory / self.datasets[i] / 'train_meta.json', 'w') as f:
                     json.dump(train_meta, f, indent = 4)
