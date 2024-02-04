@@ -314,10 +314,13 @@ class ExpRunner:
                         test_dataframe = self.val_dataframes[i],
                         predictor = self.predictors[i]
                         )
-                    ft_sum = self.predictors[i].leaderboard(data=self.val_dataframes[i], silent=True)
+                    ft_sum = self.predictors[i].leaderboard(data=self.val_dataframes[i],
+                                                            extra_metrics=['roc_auc', 'log_loss'],
+                                                            silent=True)
                     print(f"Test score for refitted predictor of dataset {self.datasets[i]}: {score}")
 
-                all_refit_scores = ft_sum['score_test'].tolist()
+                all_refit_scores_roc_auc = ft_sum['roc_auc'].tolist()
+                all_refit_scores_log_loss = ft_sum['log_loss'].tolist()
                 all_models = ft_sum['model'].tolist()
 
                 # Set the refit flag to True and save the refit score in the train metadata
@@ -325,7 +328,8 @@ class ExpRunner:
                     train_meta = json.load(f)
                     train_meta['refit'] = True
                     train_meta['refit_val_score'] = score
-                    train_meta['all_models_refit_scores'] = dict(zip(all_models, all_refit_scores))
+                    train_meta['all_models_refit_scores_roc_auc'] = dict(zip(all_models, all_refit_scores_roc_auc))
+                    train_meta['all_models_refit_scores_log_loss'] = dict(zip(all_models, all_refit_scores_log_loss))
 
                 with open(self.root_dir / 'Runs' / directory / self.datasets[i] / 'train_meta.json', 'w') as f:
                     json.dump(train_meta, f, indent = 4)
