@@ -334,6 +334,7 @@ class ExpRunner:
                     train_meta = json.load(f)
                     train_meta['refit'] = True
                     train_meta['refit_val_score'] = score
+                    train_meta['model_complexity'] = self.calculate_complexity(self.predictors[i])
                     train_meta['all_models_refit_scores_roc_auc'] = dict(zip(all_models, all_refit_scores_roc_auc))
                     train_meta['all_models_refit_scores_log_loss'] = dict(zip(all_models, all_refit_scores_log_loss))
 
@@ -450,3 +451,49 @@ class ExpRunner:
         if len(self.predictors) == 0:
             raise ValueError("No predictors present!]"
                             "Please run the experiment in mode 'fit' first!")
+
+    def calculate_complexity(self,
+                             predictor: Gluon):
+        # Define weights for each parameter
+        weight_epochs = 0.6
+        weight_boost_iterations = 0.6
+        weight_estimators = 0.6
+        weight_fit_time = 0.3
+        weight_pred_time = 0.1
+
+        # Get the leaderboard with extra info
+        feat_sm = predictor.leaderboard(extra_info=True)
+
+        complexity_scores = {}
+
+        for index, model_info in feat_sm.iterrows():
+            if "FULL" in model_info['model'] or "WeightedEnsemble_L2" in model_info['model'] or "KNeighbors" in model_info['model']:
+                continue
+            
+            num_epochs, num_boost_iterations, n_estimators = 0, 0, 0
+            hyperparams_fit = model_info['hyperparameters_fit']
+            if len(hyperparams_fit) > 0:
+                if 'num_epochs' in hyperparams_fit:
+                    num_epochs = hyperparams_fit['num_epochs']
+                elif 'epochs' in hyperparams_fit:
+                    num_epochs = hyperparams_fit['epochs']
+
+                num_boost_iterations = max(hyperparams_fit.get('num_boost_round', 0), hyperparams_fit.get('iterations', 0))
+                n_estimators = hyperparams_fit.get('n_estimators', n_estimators)
+
+            fit_time = model_info['fit_time']
+            pred_time = model_info['pred_time_val']
+            num_epochs_norm = num_epochs / 1000
+            num_boost_iterations_norm = num_boost_iterations / 10000
+            n_estimators_norm = n_estimators / 10000
+
+            # Calculate weighted complexity score
+            complexity_score = (weight_epochs * num_epochs_norm +
+                                weight_boost_iterations * num_boost_iterations_norm +
+                                weight_estimators * n_estimators_norm +
+                                weight_fit_time * fit_time +
+                                weight_pred_time * pred_time)
+            
+            complexity_scores[model_info['model']] = complexity_score
+        
+        return complexity_scores
