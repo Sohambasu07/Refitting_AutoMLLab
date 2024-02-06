@@ -4,9 +4,9 @@
 "spambase": 
   "url": "https://www.openml.org/data/download/44/dataset_44_spambase.arff"
   "label": "class"
-"yeast_ml8": 
-  "url": "https://www.openml.org/data/download/52220/phpHvRukp"
-  "label": "class14"
+"kin8nm": 
+  "url": "https://www.openml.org/data/download/53341/kin8nm.arff"
+  "label": "binaryClass"
 "abalone": 
   "url": "https://www.openml.org/data/download/53254/abalone.arff"
   "label": "binaryClass"
@@ -28,3 +28,45 @@
 "electricity": 
   "url": "https://www.openml.org/data/download/2419/electricity-normalized.arff"
   "label": "class"
+"kick":
+  "url": "https://www.openml.org/data/download/19335679/kick.arff"
+  "label": "IsBadBuy"
+"higgs":
+  "url": "https://www.openml.org/data/download/2063675/phpZLgL9q"
+  "label": "class"
+"numerai28.6":
+  "url": "https://www.openml.org/data/download/2160285/phpg2t68G"
+  "label": "attribute_21"
+"vehicle_sensIT":
+  "url": "https://www.openml.org/data/download/52260/phpNzIybr"
+  "label": "Y"
+"Run_or_walk_informationf":
+  "url": "https://www.openml.org/data/download/16788738/phpMD2hR6"
+  "label": "activity"
+"vehicleNorm":
+  "url": "https://www.openml.org/data/download/522889/vehicleNorm.arff"
+  "label": "Y"
+"BNG(tic-tac-toe)":
+  "url": "https://www.openml.org/data/download/2167/BayesianNetworkGenerator_tic-tac-toe.arff"
+  "label": "Class"
+"adult":
+  "url": "https://www.openml.org/data/download/3608/dataset_183_adult.arff"
+  "label": "class"
+"house_16H":
+  "url": "https://www.openml.org/data/download/53355/house_16H.arff"
+  "label": "binaryClass"
+"pol":
+  "url": "https://www.openml.org/data/download/53256/pol.arff"
+  "label": "binaryClass"
+"cpu_act":
+  "url": "https://www.openml.org/data/download/53295/cpu_act.arff"
+  "label": "binaryClass"
+"delta-ailerons":
+  "url": "https://www.openml.org/data/download/53337/delta_ailerons.arff"
+  "label": "binaryClass"
+"mammography":
+  "url": "https://www.openml.org/data/download/52214/phpn1jVwe"
+  "label": "class"
+"BNG(breast-w)":
+  "url": "https://www.openml.org/data/download/5600/BNG_breast-w.arff"
+  "label": "Class"
