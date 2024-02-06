@@ -27,6 +27,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     root_dir = Path(args.root_dir)
     data_dir = root_dir / args.data_dir
+    if not data_dir.exists():
+        data_dir.mkdir()
     dataset_cfg = root_dir / args.dataset_cfg
 
     with open(dataset_cfg, "r") as f:
