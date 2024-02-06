@@ -239,7 +239,11 @@ class ExpRunner:
                 ft_sum = self.predictors[i].leaderboard(silent = True)
                 all_fit_scores = ft_sum['score_val'].tolist()
                 all_models = ft_sum['model'].tolist()
-                
+
+                dataset_class_percent = df[label].value_counts(normalize=True)
+                over_balanced_percent = dataset_class_percent.max()
+                under_balanced_percent = dataset_class_percent.min()
+
                 # Save the train metadata
                 train_meta = {
                 'dataset': self.datasets[i],
@@ -247,6 +251,8 @@ class ExpRunner:
                 'n_samples': df.shape[0] + self.val_dataframes[i].shape[0],
                 'n_features': df.shape[1],
                 'n_classes': len(df[label].unique()),
+                'over_balanced': over_balanced_percent,
+                'under_balanced': under_balanced_percent,
                 'holdout_frac': self.holdout_frac,
                 'validation_split': self.val_split,
                 'eval_metric': self.eval_metric,
