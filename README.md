@@ -97,5 +97,5 @@ By incorporating meta-learning into our workflow, we enhance our ability to make
 
 We would like to express our gratitude to the following supervisors for their guidance and support throughout the project:
 
-- [Lennart Purucker](#https://ml.informatik.uni-freiburg.de/profile/purucker/)
-- [Eddie Bergman](#https://ml.informatik.uni-freiburg.de/profile/bergman/)
+- [Lennart Purucker](https://ml.informatik.uni-freiburg.de/profile/purucker/)
+- [Eddie Bergman](https://ml.informatik.uni-freiburg.de/profile/bergman/)
