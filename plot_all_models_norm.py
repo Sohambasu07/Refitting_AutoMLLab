@@ -3,12 +3,12 @@ import numpy as np
 import plotly.graph_objects as go
 
 # Data from the JSON files
-datasets = [
-    "aps_failure", "spambase", "puma32H", "kr-vs-kp", "electricity",
-    "delta_ailerons", "cpu_small", "bank32nh", "abalone", "2dplanes"
-]
+# datasets = [
+#     "aps_failure", "spambase", "puma32H", "kr-vs-kp", "electricity",
+#     "delta_ailerons", "cpu_small", "bank32nh", "abalone", "2dplanes"
+# ]
 
-run_path = "Runs/Run_20240204_184330/"
+run_path = "Runs/Run_20240207_003612/"
 
 metric = "all_models_refit_scores_roc_auc"
 
@@ -32,7 +32,7 @@ unused_models = ["KNeighborsDist", "KNeighborsUnif"]
 
 with open(run_path+"exp_meta.json", 'r') as file:
     data = json.load(file)
-    split_rs, vs = data["split_random_state"], data["val_split"]
+    split_rs, vs, datasets = data["split_random_state"], data["val_split"], data["datasets"]
 
 def extract_score_from_json(file_path, model):
     with open(file_path, 'r') as file:
@@ -101,14 +101,14 @@ for idx, scores in enumerate(refit_val_scores):
 fig.update_xaxes(type='category')
 # Update layout
 fig.update_layout(
-    title='Comparison of Fit and Refit Validation roc_auc Across Datasets',
+    title='Comparison of Fit and Refit Validation score (min-max normalized roc_auc) for each Dataset',
     xaxis_title='Dataset',
-    yaxis_title='roc_auc',
+    yaxis_title='normalized roc_auc',
     legend_title='Model',
     margin=dict(l=20, r=20, t=40, b=20),
     paper_bgcolor="LightSteelBlue",
 )
-# fig.update_layout(yaxis_range = [, 1])
+fig.update_layout(yaxis_range = [0, 1])
 fig.show()
 print()
 # Check if datasets and scores lists are of the same length

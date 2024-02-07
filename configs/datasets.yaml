@@ -28,24 +28,24 @@
 "electricity": 
   "url": "https://www.openml.org/data/download/2419/electricity-normalized.arff"
   "label": "class"
-"kick":
-  "url": "https://www.openml.org/data/download/19335679/kick.arff"
-  "label": "IsBadBuy"
+#"kick":
+#  "url": "https://www.openml.org/data/download/19335679/kick.arff"
+#  "label": "IsBadBuy"
 "higgs":
   "url": "https://www.openml.org/data/download/2063675/phpZLgL9q"
   "label": "class"
 "numerai28.6":
   "url": "https://www.openml.org/data/download/2160285/phpg2t68G"
   "label": "attribute_21"
-"vehicle_sensIT":
-  "url": "https://www.openml.org/data/download/52260/phpNzIybr"
-  "label": "Y"
+#"vehicle_sensIT":
+#  "url": "https://www.openml.org/data/download/52260/phpNzIybr"
+#  "label": "Y"
 "Run_or_walk_informationf":
   "url": "https://www.openml.org/data/download/16788738/phpMD2hR6"
   "label": "activity"
-"vehicleNorm":
-  "url": "https://www.openml.org/data/download/522889/vehicleNorm.arff"
-  "label": "Y"
+#"vehicleNorm":
+#  "url": "https://www.openml.org/data/download/522889/vehicleNorm.arff"
+#  "label": "Y"
 "BNG(tic-tac-toe)":
   "url": "https://www.openml.org/data/download/2167/BayesianNetworkGenerator_tic-tac-toe.arff"
   "label": "Class"
