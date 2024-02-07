@@ -9,6 +9,7 @@ This project explores the question of whether it's beneficial to refit the final
 - [Setup](#setup)
 - [Usage](#usage)
 - [Meta-Learning for Decision-Making](#meta-learning-for-decision-making)
+- [Supervisors](#supervisors)
 
 ## Introduction
 
@@ -91,3 +92,10 @@ To utilize our meta-learning approach for decision-making:
 4. Utilize the trained model to analyze new experiment results and make informed decisions on whether to refit models based on the learned patterns.
 
 By incorporating meta-learning into our workflow, we enhance our ability to make effective decisions and adapt to varying conditions encountered in machine learning experimentation.
+
+## Supervisors
+
+We would like to express our gratitude to the following supervisors for their guidance and support throughout the project:
+
+- [Lennart Purucker](#https://ml.informatik.uni-freiburg.de/profile/purucker/)
+- [Eddie Bergman](#https://ml.informatik.uni-freiburg.de/profile/bergman/)
