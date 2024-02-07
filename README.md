@@ -8,7 +8,7 @@ This project explores the question of whether it's beneficial to refit the final
 - [Introduction](#introduction)
 - [Setup](#setup)
 - [Usage](#usage)
-- [Results](#results)
+- [Meta-Learning for Decision-Making](#meta-learning-for-decision-making)
 
 ## Introduction
 
@@ -66,3 +66,28 @@ This will generate an interactive plot displaying the ROC-AUC scores for each mo
 ```python
 python plot_all_models_norm.py
 ```
+
+## Meta-Learning for Decision-Making
+
+In this project, we employ meta-learning techniques to assist us in making informed decisions based on the results of our experiments. Meta-learning enables our system to learn from previous experiments and adapt its decision-making process accordingly. By analyzing various metrics and factors such as dataset characteristics, model complexity, and performance scores, our meta-learning model helps us determine whether to refit or not, ultimately enhancing the overall effectiveness of our machine learning pipeline.
+
+### Key Components
+
+- **Data Extraction**: We extract relevant data from our experiment results, including performance metrics, dataset properties, and model complexity measures.
+  
+- **Label Creation**: Based on the extracted data, we create labels indicating whether it is beneficial to refit the model or not, leveraging meta-learning principles to make these determinations.
+  
+- **Model Training**: Utilizing AutoGluon, we train a meta-learning model on the generated dataset, enabling it to learn patterns and relationships from past experiments.
+
+- **Decision Support**: The trained meta-learning model provides valuable insights and recommendations for decision-making, helping us optimize our machine learning workflows and achieve better performance.
+
+### Usage
+
+To utilize our meta-learning approach for decision-making:
+
+1. Ensure you have collected experiment data in the required format, including performance metrics and dataset characteristics.
+2. Run the provided script to process the experiment data and create a meta-learning dataset.
+3. Train the meta-learning model using AutoGluon on the generated dataset.
+4. Utilize the trained model to analyze new experiment results and make informed decisions on whether to refit models based on the learned patterns.
+
+By incorporating meta-learning into our workflow, we enhance our ability to make effective decisions and adapt to varying conditions encountered in machine learning experimentation.
